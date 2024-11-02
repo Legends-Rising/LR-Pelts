@@ -204,15 +204,15 @@ Citizen.CreateThread(function()
             -- Check if the player has completed holding the tanning or drying prompt
             if PromptHasHoldModeCompleted(tanningPrompt) then
                 openTanningMenu()
-                Citizen.Wait(500)
+                Citizen.Wait(100)
                 PromptSetEnabled(tanningPrompt, false)
-                Citizen.Wait(100)  -- Short delay to ensure prompt resets properly
+                Citizen.Wait(50)  -- Short delay to ensure prompt resets properly
                 PromptSetEnabled(tanningPrompt, true)
             elseif PromptHasHoldModeCompleted(dryingPrompt) then
                 openDryingMenu()
-                Citizen.Wait(500)
+                Citizen.Wait(100)
                 PromptSetEnabled(dryingPrompt, false)
-                Citizen.Wait(100)  -- Short delay to ensure prompt resets properly
+                Citizen.Wait(50)  -- Short delay to ensure prompt resets properly
                 PromptSetEnabled(dryingPrompt, true)
             end
         else
@@ -236,9 +236,9 @@ Citizen.CreateThread(function()
             -- Check if the player has completed holding the cleaning prompt
             if PromptHasHoldModeCompleted(cleaningPrompt) then
                 openCleaningMenu()
-                Citizen.Wait(500)
+                Citizen.Wait(100)
                 PromptSetEnabled(cleaningPrompt, false)
-                Citizen.Wait(100)  -- Short delay to ensure prompt resets properly
+                Citizen.Wait(50)  -- Short delay to ensure prompt resets properly
                 PromptSetEnabled(cleaningPrompt, true)
             end
         else
@@ -252,7 +252,7 @@ Citizen.CreateThread(function()
         wasNearHideFrame = isNearHideFrame
         wasNearCleaningBarrel = isNearCleaningBarrel
 
-        Citizen.Wait(10)
+        Citizen.Wait(5)
     end
 end)
 
