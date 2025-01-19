@@ -1,5 +1,26 @@
 local VORPcore = exports.vorp_core:GetCore()
 
+local function hasRequiredJob(source)
+    if not Config.JobLock.enabled then return true end
+    
+    local Character = VORPcore.getUser(source).getUsedCharacter
+    local playerJob = Character.job
+    local playerGrade = Character.jobGrade
+
+    if playerGrade < Config.JobLock.jobGrade then return false end
+
+    for _, job in ipairs(Config.JobLock.jobs) do
+        if playerJob == job then
+            return true
+        end
+    end
+    return false
+end
+
+function checkInventorySpace(_source, item, quantity)
+    return exports.vorp_inventory:canCarryItem(_source, item, quantity)
+end
+
 ----------------------------------------------------------------
 -- Registering usable items
 ----------------------------------------------------------------
@@ -12,6 +33,13 @@ AddEventHandler('pelt:checkCanProcess', function(processType, peltType, quantity
     local missingItems = {}
     local notEnoughSpace = false
     local peltData
+
+    -- Check job requirements first
+    if not hasRequiredJob(_source) then
+        VORPcore.NotifyLeft(_source, "Job Required", "You don't have the required job or job grade", "INVENTORY_ITEMS", "upgrade_fsh_bait_lure_none", 5000, "COLOR_PURE_WHITE")
+        TriggerClientEvent('pelt:canProcessResponse', _source, processType, false, peltType, {}, false)
+        return
+    end
 
     if processType == "cleaning" then
         peltData = Config.CleanablePelts[peltType]
@@ -59,7 +87,6 @@ AddEventHandler('pelt:checkCanProcess', function(processType, peltType, quantity
 
     TriggerClientEvent('pelt:canProcessResponse', _source, processType, canProcess, peltType, missingItems, notEnoughSpace)
 end)
-
 
 -- Process the pelt
 RegisterNetEvent('pelt:processPelt')
@@ -113,7 +140,7 @@ AddEventHandler('pelt:processPelt', function(processType, peltType, quantity, su
     end
 end)
 
-
+-- Return items if processing fails
 RegisterNetEvent('pelt:returnItemsOnFailure')
 AddEventHandler('pelt:returnItemsOnFailure', function(processType, peltType, quantity)
     local _source = source
@@ -146,6 +173,7 @@ end)
 -- Checking inventory for crafting prompts and Inventory space
 --------------------------------------------------------------------------------
 
+-- Check inventory for prompts
 RegisterServerEvent('checkInventoryForPrompts')
 AddEventHandler('checkInventoryForPrompts', function()
     local _source = source
@@ -176,9 +204,19 @@ AddEventHandler('checkInventoryForPrompts', function()
         end
     end
 
+    -- Only check if they have items, job check happens when they use the prompt
     TriggerClientEvent('updatePrompts', _source, hasTanningItems, hasDryingItems, hasCleaningItems)
 end)
 
-function checkInventorySpace(_source, item, quantity)
-    return exports.vorp_inventory:canCarryItem(_source, item, quantity)
-end
+-- Check job requirements
+RegisterServerEvent('pelt:checkJobRequirement')
+AddEventHandler('pelt:checkJobRequirement', function(processType)
+    local _source = source
+    
+    if hasRequiredJob(_source) then
+        TriggerClientEvent('pelt:jobCheckResponse', _source, processType, true)
+    else
+        VORPcore.NotifyLeft(_source, "Job Required", "You don't have the required job or job grade", "INVENTORY_ITEMS", "upgrade_fsh_bait_lure_none", 5000, "COLOR_PURE_WHITE")
+        TriggerClientEvent('pelt:jobCheckResponse', _source, processType, false)
+    end
+end)

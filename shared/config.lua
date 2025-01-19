@@ -2,6 +2,17 @@ Config = {}
 
 Config.Debug = false
 Config.locale = 'en_lang' -- Change this to the language you want to use.
+
+-- Job Configuration
+Config.JobLock = {
+    enabled = true, -- Set to false to disable job requirements
+    jobs = {
+        'tanner',  -- Example job name
+        'hunter'   -- Can add multiple allowed jobs
+    },
+    jobGrade = 0   -- Minimum job grade required
+}
+
 Config.keys = {
     E = 0x41AC83D1,
     R = 0xE3BF959B,

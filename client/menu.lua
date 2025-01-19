@@ -103,6 +103,25 @@ function openCleaningMenu()
         }
     })
 
+    -- Add job requirement information if enabled
+    if Config.JobLock.enabled then
+        local jobText = "Required Jobs: " .. table.concat(Config.JobLock.jobs, ", ")
+        if Config.JobLock.jobGrade > 0 then
+            jobText = jobText .. " (Grade " .. Config.JobLock.jobGrade .. "+"
+        end
+
+        MainPage:RegisterElement("html", {
+            slot = "footer",
+            value = {
+                [[
+                    <div style="text-align: center; margin: 0 auto; max-width: 80%; padding: 10px; color: #ff9999;">
+                        ]] .. jobText .. [[
+                    </div>
+                ]]
+            }
+        })
+    end
+
     CleaningMenu:Open({startupPage = MainPage})
 end
 

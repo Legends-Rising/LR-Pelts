@@ -203,13 +203,13 @@ Citizen.CreateThread(function()
 
             -- Check if the player has completed holding the tanning or drying prompt
             if PromptHasHoldModeCompleted(tanningPrompt) then
-                openTanningMenu()
+                TriggerServerEvent('pelt:checkJobRequirement', 'tanning')
                 Citizen.Wait(100)
                 PromptSetEnabled(tanningPrompt, false)
                 Citizen.Wait(50)  -- Short delay to ensure prompt resets properly
                 PromptSetEnabled(tanningPrompt, true)
             elseif PromptHasHoldModeCompleted(dryingPrompt) then
-                openDryingMenu()
+                TriggerServerEvent('pelt:checkJobRequirement', 'drying')
                 Citizen.Wait(100)
                 PromptSetEnabled(dryingPrompt, false)
                 Citizen.Wait(50)  -- Short delay to ensure prompt resets properly
@@ -235,7 +235,7 @@ Citizen.CreateThread(function()
 
             -- Check if the player has completed holding the cleaning prompt
             if PromptHasHoldModeCompleted(cleaningPrompt) then
-                openCleaningMenu()
+                TriggerServerEvent('pelt:checkJobRequirement', 'cleaning')
                 Citizen.Wait(100)
                 PromptSetEnabled(cleaningPrompt, false)
                 Citizen.Wait(50)  -- Short delay to ensure prompt resets properly
@@ -481,6 +481,18 @@ AddEventHandler('pelt:startProcess', function(processType, peltType, quantity)
     end
 end)
 
+RegisterNetEvent('pelt:jobCheckResponse')
+AddEventHandler('pelt:jobCheckResponse', function(processType, hasJob)
+    if hasJob then
+        if processType == 'cleaning' then
+            openCleaningMenu()
+        elseif processType == 'tanning' then
+            openTanningMenu()
+        elseif processType == 'drying' then
+            openDryingMenu()
+        end
+    end
+end)
 
 -------------------------------------------------------
 -- Resource Stopping

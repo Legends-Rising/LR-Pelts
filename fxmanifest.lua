@@ -37,6 +37,6 @@ dependency {
     'feather-progressbar',
 }
 
-version '1.0.0'
+version '1.0.1'
 vorp_checker 'yes'
 vorp_name '^4Resource version Check^3'
