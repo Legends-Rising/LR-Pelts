@@ -162,7 +162,7 @@ local wasNearHideFrame = false
 local isNearCleaningBarrel = false
 local wasNearCleaningBarrel = false
 
-local proximityThreshold = 2.0
+local proximityThreshold = Config.PromptRange
 
 Citizen.CreateThread(function()
     while true do
@@ -345,6 +345,27 @@ AddEventHandler('pelt:startProcess', function(processType, peltType, quantity)
     local processingTime = 20000 * quantity
     local halfwayPoint = processingTime / 2
     local prop = nil
+    local isProcessingCancelled = false
+
+    -- Create variable to track processing state
+    local isCurrentlyProcessing = true
+
+    -- Add collision detection thread
+    local collisionCheckThread = Citizen.CreateThread(function()
+        while isCurrentlyProcessing do
+            Citizen.Wait(100)
+            if HasEntityCollidedWithAnything(playerPed) or IsEntityTouchingEntity(playerPed, GetNearestPlayerPed()) then
+                local speed = GetEntitySpeed(playerPed)
+                if speed > 0.5 then
+                    isProcessingCancelled = true
+                    isCurrentlyProcessing = false
+                    VORPcore.NotifyLeft("Processing Interrupted", "You were interrupted by movement!", "INVENTORY_ITEMS", "upgrade_fsh_bait_lure_none", 5000, "COLOR_PURE_WHITE")
+                    TriggerServerEvent('pelt:returnItemsOnFailure', processType, peltType, quantity)
+                    break
+                end
+            end
+        end
+    end)
 
     local function playAnimation(dict, name, flag, duration)
         if Config.Debug then
@@ -411,6 +432,23 @@ AddEventHandler('pelt:startProcess', function(processType, peltType, quantity)
             end
 
             progressbar.start(config.progressBar, processingTime, function()
+                -- Check if processing was cancelled due to collision
+                if isProcessingCancelled then
+                    if Config.Debug then
+                        print("Processing was cancelled due to collision")
+                    end
+                    if prop then
+                        DeleteObject(prop)
+                        prop = nil
+                    end
+                    ClearPedTasksImmediately(PlayerPedId())
+                    FreezeEntityPosition(playerPed, false)
+                    enableInventory()
+                    return
+                end
+                
+                isCurrentlyProcessing = false -- Set to false when normal completion happens
+                
                 if Config.Debug then
                     print("Triggering processPelt for peltType:", peltType, "processType:", processType, "quantity:", quantity)
                 end

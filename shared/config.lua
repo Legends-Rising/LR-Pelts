@@ -3,6 +3,9 @@ Config = {}
 Config.Debug = false
 Config.locale = 'en_lang' -- Change this to the language you want to use.
 
+-- Prompt Configuration
+Config.PromptRange = 2.0 -- Distance in meters at which interaction prompts will appear near props
+
 -- Job Configuration
 Config.JobLock = {
     enabled = true, -- Set to false to disable job requirements

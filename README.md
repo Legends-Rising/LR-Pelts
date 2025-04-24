@@ -6,7 +6,7 @@
 
 ## 📖 Description
 
-Legends: Pelts is a fully immersive and interactive pelt processing system for RedM servers. Whether you’re an experienced hunter or new to the trade, this script brings the art of tanning and leatherworking to life, transforming each step into an engaging process.
+Legends: Pelts is a fully immersive and interactive pelt processing system for RedM servers. Whether you're an experienced hunter or new to the trade, this script brings the art of tanning and leatherworking to life, transforming each step into an engaging process.
 
 
 ## ⚙️ Compatibility
@@ -19,6 +19,8 @@ Legends: Pelts is a fully immersive and interactive pelt processing system for R
 - **🪣 Wash Bucket:** Detailed animations let players rinse pelts to prepare for tanning.
 - **🌞 Tanning & Drying Stages:** Step-by-step transformations for an authentic experience.
 - **📜 Engaging Process:** Adds depth and realism to hunting and leatherworking.
+- **⚙️ Customizable Prompt Range:** Adjust the interaction distance for all tanning stations.
+- **🛡️ Player Collision Protection:** Prevents griefing by automatically canceling the tanning process if player is bumped or pushed.
 
 ## 🛠 Dependencies
 
@@ -38,7 +40,7 @@ Watch a showcase of **Legends: Pelts** in action and see the immersive pelt proc
 
 1. **Download** the Legends: Pelts script from this repository.
 2. **Install Dependencies**: Make sure all required resources listed above are installed.
-3. **Configure**: Edit the `config.lua` file to customize settings to your server’s preferences.
+3. **Configure**: Edit the `config.lua` file to customize settings to your server's preferences.
 4. **Add to Server**: Place the Legends: Pelts folder in your server's resources directory.
 5. **Start the Resource**: Add `start legends-pelts` to your `server.cfg` file.
 
