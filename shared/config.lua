@@ -63,7 +63,8 @@ Config.CleanablePelts = { -- Cleaning Recipes
     }
 }
 
-Config.TannablePelts = { -- Tanning Pelts
+-- Example of updated config structure
+Config.TannablePelts = {
     CleanPelt = {
         label = 'Tanned Leather',
         Imglabel = 'nui://vorp_inventory/html/img/items/tanned_leather.png',
@@ -76,10 +77,8 @@ Config.TannablePelts = { -- Tanning Pelts
             {item = 'brain_oil', label = 'Brain Oil', quantity = 1, descImg = "nui://vorp_inventory/html/img/items/brain_oil.png"}
         },
         result = {
-            type = 'item',
-            name = 'tanned_leather',
-            label = 'Tanned Leather',
-            quantity = 1
+            {type = 'item', name = 'tanned_leather', label = 'Tanned Leather', quantity = 2, image = 'nui://vorp_inventory/html/img/items/tanned_leather.png'},
+            {type = 'item', name = 'fibers', label = 'Fibers', quantity = 4, image = 'nui://vorp_inventory/html/img/items/fibers.png'}
         }
     },
 }

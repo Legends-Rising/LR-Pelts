@@ -4,6 +4,34 @@ local selectedCleaningQuantity = 1
 local selectedTanningQuantity = 1
 local selectedDryingQuantity = 1
 
+-- Helper function to create result HTML for multiple items
+local function createResultHtml(peltInfo, quantity)
+    local results = peltInfo.result
+    local resultHtml = ""
+    
+    if results.name then -- Old format - single result
+        resultHtml = "<div style='text-align: center;'>"
+        resultHtml = resultHtml .. "<p>" .. results.label .. "</p>"
+        resultHtml = resultHtml .. "<img src='" .. peltInfo.Imglabel .. "' style='width: 128px; height: 128px; display: block; margin: auto;'>"
+        resultHtml = resultHtml .. "<p>x" .. tostring((results.quantity or 1) * quantity) .. "</p>"
+        resultHtml = resultHtml .. "</div>"
+    else -- New format - multiple results
+        resultHtml = "<div style='display: flex; justify-content: space-around;'>"
+        for _, result in ipairs(results) do
+            resultHtml = resultHtml .. "<div style='text-align: center;'>"
+            resultHtml = resultHtml .. "<p>" .. result.label .. "</p>"
+            -- Use image from result or fallback to default path
+            local imageUrl = result.image or ("nui://vorp_inventory/html/img/items/" .. result.name .. ".png")
+            resultHtml = resultHtml .. "<img src='" .. imageUrl .. "' style='width: 96px; height: 96px; display: block; margin: auto;'>"
+            resultHtml = resultHtml .. "<p>x" .. tostring((result.quantity or 1) * quantity) .. "</p>"
+            resultHtml = resultHtml .. "</div>"
+        end
+        resultHtml = resultHtml .. "</div>"
+    end
+    
+    return resultHtml
+end
+
 -------------------------------------------------------
 -- Pelt Cleaning Process (1) -- Menu
 -------------------------------------------------------
@@ -180,11 +208,8 @@ function openPeltCleaningPage(CleaningMenu, peltType)
         slot = "content"
     })
 
-    local resultHtml = "<div style='text-align: center;'>"
-    resultHtml = resultHtml .. "<p>" .. peltInfo.label .. "</p>"
-    resultHtml = resultHtml .. "<img src='" .. peltInfo.Imglabel .. "' style='width: 128px; height: 128px; display: block; margin: auto;'>"
-    resultHtml = resultHtml .. "<p>x1</p>" -- Default quantity is 1
-    resultHtml = resultHtml .. "</div>"
+    -- Use the new function to create result HTML
+    local resultHtml = createResultHtml(peltInfo, 1)
 
     resultHtmlElement = PeltCleaningPage:RegisterElement('html', {
         value = resultHtml,
@@ -234,12 +259,8 @@ function updatePeltCleaningDetails(quantity, peltInfo)
     newIngredientsHtml = newIngredientsHtml .. "</div>"
     ingredientsHtmlElement:update({ value = newIngredientsHtml })
 
-    local newResultHtml = "<div style='text-align: center;'>"
-    newResultHtml = newResultHtml .. "<p>" .. peltInfo.label .. "</p>"
-    newResultHtml = newResultHtml .. "<img src='" .. peltInfo.Imglabel .. "' style='width: 128px; height: 128px; display: block; margin: auto;'>"
-    newResultHtml = newResultHtml .. "<p>x" .. tostring(quantity) .. "</p>"
-    newResultHtml = newResultHtml .. "</div>"
-
+    -- Use the new function to create updated result HTML
+    local newResultHtml = createResultHtml(peltInfo, quantity)
     resultHtmlElement:update({ value = newResultHtml })
 end
 
@@ -292,7 +313,11 @@ function openTanningMenu()
         return a.label:lower() < b.label:lower() -- Sort alphabetically, case-insensitive
     end)
 
-    for peltType, peltInfo in pairs(Config.TannablePelts) do
+    -- Use sorted pelts instead of original pairs loop
+    for _, entry in ipairs(sortedPelts) do
+        local peltType = entry.peltType
+        local peltInfo = Config.TannablePelts[peltType]
+
         MainPage:RegisterElement('button', {
             label = peltInfo.label,
             slot = "content"
@@ -395,11 +420,8 @@ function openTanningPage(TanningMenu, peltType)
         slot = "content"
     })
 
-    local resultHtml = "<div style='text-align: center;'>"
-    resultHtml = resultHtml .. "<p>" .. peltInfo.label .. "</p>"
-    resultHtml = resultHtml .. "<img src='" .. peltInfo.Imglabel .. "' style='width: 128px; height: 128px; display: block; margin: auto;'>"
-    resultHtml = resultHtml .. "<p>x1</p>" -- Default quantity is 1
-    resultHtml = resultHtml .. "</div>"
+    -- Use the new function to create result HTML
+    local resultHtml = createResultHtml(peltInfo, 1)
 
     resultHtmlElement = PeltTanningPage:RegisterElement('html', {
         value = resultHtml,
@@ -448,12 +470,8 @@ function updatePeltTanningDetails(quantity, peltInfo)
     newIngredientsHtml = newIngredientsHtml .. "</div>"
     ingredientsHtmlElement:update({ value = newIngredientsHtml })
 
-    local newResultHtml = "<div style='text-align: center;'>"
-    newResultHtml = newResultHtml .. "<p>" .. peltInfo.label .. "</p>"
-    newResultHtml = newResultHtml .. "<img src='" .. peltInfo.Imglabel .. "' style='width: 128px; height: 128px; display: block; margin: auto;'>"
-    newResultHtml = newResultHtml .. "<p>x" .. tostring(quantity) .. "</p>"
-    newResultHtml = newResultHtml .. "</div>"
-
+    -- Use the new function to create updated result HTML
+    local newResultHtml = createResultHtml(peltInfo, quantity)
     resultHtmlElement:update({ value = newResultHtml })
 end
 
@@ -506,7 +524,11 @@ function openDryingMenu()
         return a.label:lower() < b.label:lower() -- Sort alphabetically, case-insensitive
     end)
 
-    for peltType, peltInfo in pairs(Config.DryablePelts) do
+    -- Use sorted pelts instead of original pairs loop
+    for _, entry in ipairs(sortedPelts) do
+        local peltType = entry.peltType
+        local peltInfo = Config.DryablePelts[peltType]
+
         MainPage:RegisterElement('button', {
             label = peltInfo.label,
             slot = "content"
@@ -614,11 +636,8 @@ function openDryingPage(DryingMenu, peltType)
         slot = "content"
     })
 
-    local resultHtml = "<div style='text-align: center;'>"
-    resultHtml = resultHtml .. "<p>" .. peltInfo.label .. "</p>"
-    resultHtml = resultHtml .. "<img src='" .. peltInfo.Imglabel .. "' style='width: 128px; height: 128px; display: block; margin: auto;'>"
-    resultHtml = resultHtml .. "<p>x1</p>" -- Default quantity is 1
-    resultHtml = resultHtml .. "</div>"
+    -- Use the new function to create result HTML
+    local resultHtml = createResultHtml(peltInfo, 1)
 
     resultHtmlElement = PeltDryingPage:RegisterElement('html', {
         value = resultHtml,
@@ -667,11 +686,7 @@ function updatePeltDryingDetails(quantity, peltInfo)
     newIngredientsHtml = newIngredientsHtml .. "</div>"
     ingredientsHtmlElement:update({ value = newIngredientsHtml })
 
-    local newResultHtml = "<div style='text-align: center;'>"
-    newResultHtml = newResultHtml .. "<p>" .. peltInfo.label .. "</p>"
-    newResultHtml = newResultHtml .. "<img src='" .. peltInfo.Imglabel .. "' style='width: 128px; height: 128px; display: block; margin: auto;'>"
-    newResultHtml = newResultHtml .. "<p>x" .. tostring(quantity) .. "</p>"
-    newResultHtml = newResultHtml .. "</div>"
-
+    -- Use the new function to create updated result HTML
+    local newResultHtml = createResultHtml(peltInfo, quantity)
     resultHtmlElement:update({ value = newResultHtml })
 end

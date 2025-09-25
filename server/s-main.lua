@@ -17,8 +17,25 @@ local function hasRequiredJob(source)
     return false
 end
 
-function checkInventorySpace(_source, item, quantity)
-    return exports.vorp_inventory:canCarryItem(_source, item, quantity)
+-- Updated function to check inventory space for multiple results
+local function checkInventorySpaceForResults(source, peltData, quantity)
+    local results = peltData.result
+    
+    -- Handle both old single result format and new multiple results format
+    if results.name then -- Old format - single result
+        local resultQuantity = tonumber(results.quantity) or 1
+        local totalQuantity = resultQuantity * quantity
+        return exports.vorp_inventory:canCarryItem(source, results.name, totalQuantity)
+    else -- New format - multiple results
+        for _, result in ipairs(results) do
+            local resultQuantity = tonumber(result.quantity) or 1
+            local totalQuantity = resultQuantity * quantity
+            if not exports.vorp_inventory:canCarryItem(source, result.name, totalQuantity) then
+                return false
+            end
+        end
+        return true
+    end
 end
 
 ----------------------------------------------------------------
@@ -56,27 +73,14 @@ AddEventHandler('pelt:checkCanProcess', function(processType, peltType, quantity
 
     quantity = tonumber(quantity) or 1
 
-    local resultQuantity = tonumber(peltData.result.quantity) or 0
-    local processQuantity = tonumber(quantity) or 1
-
-    if resultQuantity == 0 then
-        VORPcore.NotifyLeft(_source, "Processing Aborted", "Processing aborted due to invalid pelt data.", "INVENTORY_ITEMS", "upgrade_fsh_bait_lure_none", 5000, "COLOR_PURE_WHITE")
-        return
-    end
-
-    if processQuantity == 0 then
-        VORPcore.NotifyLeft(_source, "Processing Aborted", "Processing aborted due to invalid quantity.", "INVENTORY_ITEMS", "upgrade_fsh_bait_lure_none", 5000, "COLOR_PURE_WHITE")
-        return
-    end
-
-    local totalQuantity = resultQuantity * processQuantity
-
-    if not checkInventorySpace(_source, peltData.result.name, totalQuantity) then
+    -- Check inventory space for all result items using new function
+    if not checkInventorySpaceForResults(_source, peltData, quantity) then
         notEnoughSpace = true
         canProcess = false
     else
+        -- Check requirements
         for _, req in ipairs(peltData.requirements) do
-            local requiredQuantity = req.quantity * processQuantity
+            local requiredQuantity = req.quantity * quantity
             local playerItemCount = exports.vorp_inventory:getItemCount(_source, nil, req.item, {})
             if playerItemCount < requiredQuantity then
                 canProcess = false
@@ -110,22 +114,37 @@ AddEventHandler('pelt:processPelt', function(processType, peltType, quantity, su
         return
     end
 
-    local resultQuantity = tonumber(peltData.result.quantity) or 1
     local processQuantity = tonumber(quantity) or 1
-    local totalQuantity = resultQuantity * processQuantity
 
     if success then
-        local canCarry = exports.vorp_inventory:canCarryItem(_source, peltData.result.name, totalQuantity)
-        if canCarry then
+        -- Check if we can carry all result items using new function
+        if checkInventorySpaceForResults(_source, peltData, processQuantity) then
+            -- Remove required items
             for _, req in ipairs(peltData.requirements) do
                 local requiredQuantity = req.quantity * processQuantity
                 exports.vorp_inventory:subItem(_source, req.item, requiredQuantity)
             end
 
-            -- Add the processed items to the player's inventory
-            exports.vorp_inventory:addItem(_source, peltData.result.name, totalQuantity)
+            -- Add result items
+            local results = peltData.result
+            local notificationItems = {}
+            
+            if results.name then -- Old format - single result
+                local resultQuantity = tonumber(results.quantity) or 1
+                local totalQuantity = resultQuantity * processQuantity
+                exports.vorp_inventory:addItem(_source, results.name, totalQuantity)
+                table.insert(notificationItems, totalQuantity .. "x " .. results.label)
+            else -- New format - multiple results
+                for _, result in ipairs(results) do
+                    local resultQuantity = tonumber(result.quantity) or 1
+                    local totalQuantity = resultQuantity * processQuantity
+                    exports.vorp_inventory:addItem(_source, result.name, totalQuantity)
+                    table.insert(notificationItems, totalQuantity .. "x " .. result.label)
+                end
+            end
+            
             local title = "Successfully Processed"
-            local subtitle = totalQuantity .. "x " .. peltData.label .. "!"
+            local subtitle = table.concat(notificationItems, ", ") .. "!"
             VORPcore.NotifyLeft(_source, title, subtitle, "satchel_textures", "provision_boar_skin", 5000, "COLOR_PURE_WHITE")
         else
             VORPcore.NotifyLeft(_source, "Lack of Space", "Not enough space in inventory", "INVENTORY_ITEMS", "clothing_satchel_006", 5000, "COLOR_PURE_WHITE")
@@ -164,10 +183,8 @@ AddEventHandler('pelt:returnItemsOnFailure', function(processType, peltType, qua
         exports.vorp_inventory:addItem(_source, req.item, requiredQuantity)
     end
 
-
     VORPcore.NotifyLeft(_source, "Dont you worry!", "Items returned to your inventory.", "INVENTORY_ITEMS", "clothing_satchel_006", 5000, "COLOR_PURE_WHITE")
 end)
-
 
 --------------------------------------------------------------------------------
 -- Checking inventory for crafting prompts and Inventory space

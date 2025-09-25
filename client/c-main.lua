@@ -350,11 +350,11 @@ AddEventHandler('pelt:startProcess', function(processType, peltType, quantity)
     -- Create variable to track processing state
     local isCurrentlyProcessing = true
 
-    -- Add collision detection thread
+-- Add collision detection thread
     local collisionCheckThread = Citizen.CreateThread(function()
         while isCurrentlyProcessing do
             Citizen.Wait(100)
-            if HasEntityCollidedWithAnything(playerPed) or IsEntityTouchingEntity(playerPed, GetNearestPlayerPed()) then
+            if HasEntityCollidedWithAnything(playerPed) then
                 local speed = GetEntitySpeed(playerPed)
                 if speed > 0.5 then
                     isProcessingCancelled = true

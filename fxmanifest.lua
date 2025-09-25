@@ -1,6 +1,6 @@
 
 name "legends-pelts"
-author "LEGENDS - CODE101"
+author "LR Studio - CODE101"
 description "Legends Pelts"
 
 
@@ -37,6 +37,6 @@ dependency {
     'feather-progressbar',
 }
 
-version '1.0.2'
+version '1.0.3'
 vorp_checker 'yes'
 vorp_name '^4Resource version Check^3'
